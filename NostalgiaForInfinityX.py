@@ -113,7 +113,7 @@ class NostalgiaForInfinityX(IStrategy):
     INTERFACE_VERSION = 2
 
     def version(self) -> str:
-        return "v11.0.347"
+        return "v11.0.352"
 
     candle_type = "futures"
 
@@ -2492,9 +2492,15 @@ class NostalgiaForInfinityX(IStrategy):
         ):
             return True, 'sell_stoploss_u_e_2'
 
+        count_of_buys = 1
+        if hasattr(trade, 'select_filled_orders'):
+            filled_buys = trade.select_filled_orders('buy')
+            count_of_buys = len(filled_buys)
+        is_rebuy = count_of_buys > 1
         is_leverage = bool(re.match(leverage_pattern,trade.pair)) or True
+        stop_index = 0 if is_rebuy and not is_leverage else 1 if not is_rebuy and not is_leverage else 2
         if (
-                (current_profit < [-0.25, -0.36][is_leverage])
+                (current_profit < [-0.25, -0.35, -0.46][stop_index])
                 and (last_candle['close'] < last_candle['ema_200'])
                 and (last_candle['close'] < (last_candle['ema_200'] - last_candle['atr']))
                 and (last_candle['sma_200_dec_20'])
@@ -10470,6 +10476,7 @@ class NostalgiaForInfinityX(IStrategy):
                     item_buy_logic.append(dataframe['r_14_15m'].shift(3) < -95.0)
                     item_buy_logic.append(dataframe['r_96_15m'].shift(3) < -86.0)
                     item_buy_logic.append(dataframe['close'] < dataframe['open'])
+                    item_buy_logic.append(dataframe['r_480_1h'] < -16.0)
 
                 # Condition #56 - 15m. Semi swing. Downtrend. Local dip.
                 elif index == 56:
@@ -10498,6 +10505,7 @@ class NostalgiaForInfinityX(IStrategy):
                     item_buy_logic.append(dataframe['r_14_15m'].shift(3) < -94.0)
                     item_buy_logic.append(dataframe['r_96_15m'].shift(3) < -80.0)
                     item_buy_logic.append(dataframe['close'] < dataframe['open'])
+                    item_buy_logic.append(dataframe['r_480_1h'] < -16.0)
 
                 # Condition #58 - Semi swing. Local dip.
                 elif index == 58:
