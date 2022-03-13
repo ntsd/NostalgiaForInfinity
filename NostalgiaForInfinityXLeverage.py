@@ -19,3 +19,4 @@ class NostalgiaForInfinityXLeverage(NostalgiaForInfinityX):
         :return: A leverage amount, which is between 1.0 and max_leverage.
         """
         return 2.0
+    
