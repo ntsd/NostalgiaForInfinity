@@ -2480,7 +2480,7 @@ class NostalgiaForInfinityX(IStrategy):
             filled_buys = trade.select_filled_orders('enter_long')
             count_of_buys = len(filled_buys)
         is_rebuy = count_of_buys > 1
-        is_leverage = bool(re.match(leverage_pattern,trade.pair)) or True
+        is_leverage = bool(re.match(leverage_pattern,trade.pair))
         stop_index = 0 if is_rebuy and not is_leverage else 1 if not is_rebuy and not is_leverage else 2
         if (
                 (current_profit < [-0.35, -0.35, -0.46][stop_index])
@@ -9057,6 +9057,7 @@ class NostalgiaForInfinityX(IStrategy):
 
     def custom_exit(self, pair: str, trade: 'Trade', current_time: 'datetime', current_rate: float,
                     current_profit: float, **kwargs):
+        current_profit = current_profit / 2
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if(len(dataframe) < 6):
             return None
