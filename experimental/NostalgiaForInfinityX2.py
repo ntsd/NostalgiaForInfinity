@@ -97,8 +97,8 @@ class NostalgiaForInfinityX2(IStrategy):
 
     # Optional order type mapping.
     order_types = {
-        'buy': 'limit',
-        'sell': 'limit',
+        'entry': 'limit',
+        'exit': 'limit',
         'trailing_stop_loss': 'limit',
         'stoploss': 'limit',
         'stoploss_on_exchange': False,
@@ -382,7 +382,7 @@ class NostalgiaForInfinityX2(IStrategy):
 
         return False, None
 
-    def custom_sell(self, pair: str, trade: 'Trade', current_time: 'datetime', current_rate: float,
+    def custom_exit(self, pair: str, trade: 'Trade', current_time: 'datetime', current_rate: float,
                     current_profit: float, **kwargs):
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         last_candle = dataframe.iloc[-1]
@@ -393,7 +393,7 @@ class NostalgiaForInfinityX2(IStrategy):
         previous_candle_5 = dataframe.iloc[-6]
 
         buy_tag = 'empty'
-        if hasattr(trade, 'buy_tag') and trade.buy_tag is not None:
+        if hasattr(trade, 'enter_tag') and trade.buy_tag is not None:
             buy_tag = trade.buy_tag
         buy_tags = buy_tag.split()
 
@@ -401,7 +401,7 @@ class NostalgiaForInfinityX2(IStrategy):
         max_loss = ((trade.open_rate - trade.min_rate) / trade.min_rate)
 
         if hasattr(trade, 'select_filled_orders'):
-            filled_buys = trade.select_filled_orders('buy')
+            filled_buys = trade.select_filled_orders('enter_long')
             count_of_buys = len(filled_buys)
             if count_of_buys > 1:
                 initial_buy = filled_buys[0]
@@ -790,9 +790,9 @@ class NostalgiaForInfinityX2(IStrategy):
 
         return dataframe
 
-    def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions = []
-        dataframe.loc[:, 'buy_tag'] = ''
+        dataframe.loc[:, 'enter_tag'] = ''
 
         for buy_enable in self.buy_params:
             index = int(buy_enable.split('_')[2])
@@ -824,17 +824,17 @@ class NostalgiaForInfinityX2(IStrategy):
 
                 item_buy_logic.append(dataframe['volume'] > 0)
                 item_buy = reduce(lambda x, y: x & y, item_buy_logic)
-                dataframe.loc[item_buy, 'buy_tag'] += f"{index} "
+                dataframe.loc[item_buy, 'enter_tag'] += f"{index} "
                 conditions.append(item_buy)
-                dataframe.loc[:, 'buy'] = item_buy
+                dataframe.loc[:, 'enter_long'] = item_buy
 
         if conditions:
-            dataframe.loc[:, 'buy'] = reduce(lambda x, y: x | y, conditions)
+            dataframe.loc[:, 'enter_long'] = reduce(lambda x, y: x | y, conditions)
 
         return dataframe
 
-    def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[:, 'sell'] = 0
+    def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe.loc[:, 'exit_long'] = 0
 
         return dataframe
 
