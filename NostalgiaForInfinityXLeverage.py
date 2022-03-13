@@ -18,5 +18,5 @@ class NostalgiaForInfinityXLeverage(NostalgiaForInfinityX):
         :param side: 'long' or 'short' - indicating the direction of the proposed trade
         :return: A leverage amount, which is between 1.0 and max_leverage.
         """
-        return 2.0
+        return 5.0
     

@@ -109,6 +109,7 @@ else:
 
 
 class NostalgiaForInfinityX(IStrategy):
+    leverage_size = 5
 
     INTERFACE_VERSION = 2
 
@@ -2442,7 +2443,7 @@ class NostalgiaForInfinityX(IStrategy):
         return False, None
 
     def sell_stoploss(self, current_profit: float, max_profit: float, max_loss: float, last_candle, previous_candle_1, trade: 'Trade', current_time: 'datetime') -> tuple:
-        current_profit = current_profit * 2
+        current_profit = current_profit * self.leverage_size
         # Under & near EMA200, local uptrend move
         if (
                 (current_profit < -0.025)
@@ -9058,7 +9059,7 @@ class NostalgiaForInfinityX(IStrategy):
 
     def custom_exit(self, pair: str, trade: 'Trade', current_time: 'datetime', current_rate: float,
                     current_profit: float, **kwargs):
-        current_profit = current_profit / 2
+        current_profit = current_profit / self.leverage_size
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if(len(dataframe) < 6):
             return None
