@@ -2442,6 +2442,7 @@ class NostalgiaForInfinityX(IStrategy):
         return False, None
 
     def sell_stoploss(self, current_profit: float, max_profit: float, max_loss: float, last_candle, previous_candle_1, trade: 'Trade', current_time: 'datetime') -> tuple:
+        current_profit = current_profit * 2
         # Under & near EMA200, local uptrend move
         if (
                 (current_profit < -0.025)
