@@ -2479,7 +2479,7 @@ class NostalgiaForInfinityX(IStrategy):
 
         count_of_buys = 1
         if hasattr(trade, 'select_filled_orders'):
-            filled_buys = trade.select_filled_orders('buy')
+            filled_buys = trade.select_filled_orders('enter_long')
             count_of_buys = len(filled_buys)
         is_rebuy = count_of_buys > 1
         is_leverage = bool(re.match(leverage_pattern,trade.pair)) or True
