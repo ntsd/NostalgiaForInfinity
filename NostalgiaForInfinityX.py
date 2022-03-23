@@ -2495,7 +2495,7 @@ class NostalgiaForInfinityX(IStrategy):
             filled_buys = trade.select_filled_orders('enter_long')
             count_of_buys = len(filled_buys)
         is_rebuy = count_of_buys > 1
-        is_leverage = bool(re.match(leverage_pattern,trade.pair))
+        is_leverage = bool(re.match(leverage_pattern,trade.pair)) or True
         stop_index = 0 if is_rebuy and not is_leverage else 1 if not is_rebuy and not is_leverage else 2
         if (
                 (current_profit < [-0.35, -0.35, -0.46][stop_index])
