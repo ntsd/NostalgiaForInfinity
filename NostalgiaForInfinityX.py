@@ -115,7 +115,7 @@ class NostalgiaForInfinityX(IStrategy):
     INTERFACE_VERSION = 2
 
     def version(self) -> str:
-        return "v11.0.488"
+        return "v11.0.491"
 
     # ROI table:
     minimal_roi = {
@@ -908,12 +908,12 @@ class NostalgiaForInfinityX(IStrategy):
             "safe_dips_threshold_0"     : 0.028,
             "safe_dips_threshold_2"     : 0.09,
             "safe_dips_threshold_12"    : 0.26,
-            "safe_dips_threshold_144"   : 0.44,
+            "safe_dips_threshold_144"   : 0.38,
             "safe_pump_6h_threshold"    : 0.4,
             "safe_pump_12h_threshold"   : None,
-            "safe_pump_24h_threshold"   : None,
+            "safe_pump_24h_threshold"   : 0.7,
             "safe_pump_36h_threshold"   : None,
-            "safe_pump_48h_threshold"   : 1.2,
+            "safe_pump_48h_threshold"   : 0.95,
             "btc_1h_not_downtrend"      : False,
             "close_over_pivot_type"     : "none", # pivot, sup1, sup2, sup3, res1, res2, res3
             "close_over_pivot_offset"   : 1.0,
@@ -10102,11 +10102,11 @@ class NostalgiaForInfinityX(IStrategy):
                     # Non-Standard protections (add below)
 
                     # Logic
-                    item_buy_logic.append(dataframe['ewo'].shift(1) < -5.8)
-                    item_buy_logic.append(dataframe['cti'].shift(1).rolling(5).max() < -0.9)
-                    item_buy_logic.append(dataframe['r_14'].shift(1) < -97.0)
+                    item_buy_logic.append(dataframe['ewo'].shift(1) < -5.4)
+                    item_buy_logic.append(dataframe['cti'].shift(1).rolling(5).max() < -0.86)
+                    item_buy_logic.append(dataframe['r_14'].shift(1) < -96.5)
                     item_buy_logic.append(dataframe['close'] > (dataframe['open'].shift(1)))
-                    item_buy_logic.append(dataframe['crsi_1h'] > 12.0)
+                    item_buy_logic.append(dataframe['crsi_1h'] > 14.0)
 
                 # Condition #24 - Semi swing. Uptrend. 1h uptrend. Local dip.
                 elif index == 24:
