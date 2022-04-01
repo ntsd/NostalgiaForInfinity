@@ -12,7 +12,7 @@ from freqtrade.exchange import timeframe_to_prev_date
 from pandas import DataFrame, Series, concat
 from functools import reduce
 import math
-from typing import Dict
+from typing import Dict, Optional
 from freqtrade.persistence import Trade
 from datetime import datetime, timedelta
 from technical.util import resample_to_interval, resampled_merge
@@ -112,7 +112,7 @@ else:
 class NostalgiaForInfinityX(IStrategy):
     leverage_size = 5
 
-    INTERFACE_VERSION = 2
+    INTERFACE_VERSION = 3
 
     def version(self) -> str:
         return "v11.0.493"
@@ -2276,7 +2276,7 @@ class NostalgiaForInfinityX(IStrategy):
 
     def custom_stake_amount(self, pair: str, current_time: datetime, current_rate: float,
                             proposed_stake: float, min_stake: float, max_stake: float,
-                            **kwargs) -> float:
+                            entry_tag: Optional[str], side: str, **kwargs) -> float:
         if (self.position_adjustment_enable == True):
             return proposed_stake / self.max_rebuy_multiplier
         else:
@@ -10725,7 +10725,8 @@ class NostalgiaForInfinityX(IStrategy):
         return True
 
     def confirm_trade_exit(self, pair: str, trade: "Trade", order_type: str, amount: float,
-                           rate: float, time_in_force: str, sell_reason: str, **kwargs) -> bool:
+                           rate: float, time_in_force: str, exit_reason: str,
+                           current_time: datetime, **kwargs) -> bool:
         """
         Called right before placing a regular sell order.
         Timing for this function is critical, so avoid doing heavy computations or
@@ -10748,9 +10749,9 @@ class NostalgiaForInfinityX(IStrategy):
         :return bool: When True is returned, then the sell-order is placed on the exchange.
             False aborts the process
         """
-        if self._should_hold_trade(trade, rate, sell_reason):
+        if self._should_hold_trade(trade, rate, exit_reason):
             return False
-        if (sell_reason == 'stop_loss'):
+        if (exit_reason == 'stop_loss'):
             return False
         return True
 
