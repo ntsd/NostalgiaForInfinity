@@ -110,7 +110,7 @@ else:
 
 
 class NostalgiaForInfinityX(IStrategy):
-    leverage_size = 5
+    leverage_size = 1
 
     INTERFACE_VERSION = 3
 
