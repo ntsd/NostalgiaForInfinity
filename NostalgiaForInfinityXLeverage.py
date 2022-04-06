@@ -1,12 +1,22 @@
 import sys
 from pathlib import Path
 
+# Hyperopt 
+# freqtrade download-data --exchange binanceusdm -t 5m 15m 1h --days 300
+# freqtrade download-data --exchange binanceusdm -t 1d --days 600
+# Hyperopt stoploss
+# freqtrade hyperopt --hyperopt-loss OnlyProfitHyperOptLoss --spaces stoploss --timeframe 5m -e 10000 --print-all --strategy NostalgiaForInfinityXLeverage -j 8 --timerange=20211001-
+# Backtesting
+# freqtrade backtesting --timeframe 5m --strategy NostalgiaForInfinityXLeverage
+
 sys.path.append(str(Path(__file__).parent))
 
 from NostalgiaForInfinityX import NostalgiaForInfinityX
 
 
 class NostalgiaForInfinityXLeverage(NostalgiaForInfinityX):
+    leverage_size = 5
+    
     def leverage(self, pair: str, current_time, current_rate: float, proposed_leverage: float, max_leverage: float, side: str, **kwargs) -> float:
         """
         Customize leverage for each new trade.
