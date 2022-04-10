@@ -115,7 +115,7 @@ class NostalgiaForInfinityX(IStrategy):
     INTERFACE_VERSION = 3
 
     def version(self) -> str:
-        return "v11.0.517"
+        return "v11.0.527"
 
     # ROI table:
     minimal_roi = {
@@ -169,8 +169,10 @@ class NostalgiaForInfinityX(IStrategy):
     # Rebuy feature
     position_adjustment_enable = True
     max_rebuy_orders = 7
+    max_rebuy_orders_alt = 2
     max_rebuy_multiplier = 1.0
-    rebuy_pcts = (-0.04, -0.04, -0.04, -0.04, -0.06, -0.07, -0.08)
+    rebuy_pcts = (-0.04, -0.05, -0.06, -0.07, -0.08, -0.09, -0.1)
+    rebuy_pcts_alt = (-0.08, -0.12)
 
     # Run "populate_indicators()" only for new candle.
     process_only_new_candles = True
@@ -1505,8 +1507,8 @@ class NostalgiaForInfinityX(IStrategy):
             "btc_1h_not_downtrend"      : False,
             "close_over_pivot_type"     : "none", # pivot, sup1, sup2, sup3, res1, res2, res3
             "close_over_pivot_offset"   : 1.0,
-            "close_under_pivot_type"    : "none", # pivot, sup1, sup2, sup3, res1, res2, res3
-            "close_under_pivot_offset"  : 1.0
+            "close_under_pivot_type"    : "res3", # pivot, sup1, sup2, sup3, res1, res2, res3
+            "close_under_pivot_offset"  : 1.6
         },
         45: {
             "ema_fast"                  : False,
@@ -2331,38 +2333,72 @@ class NostalgiaForInfinityX(IStrategy):
             filled_entries = trade.select_filled_orders('buy')
             count_of_entries = len(filled_entries)
 
+        if (count_of_entries == 0):
+            return None
 
-        if (1 <= count_of_entries <= 2):
-            if (
-                    (current_profit > self.rebuy_pcts[count_of_entries - 1])
-                    or (
-                        (last_candle['crsi'] < 12.0)
-                        or (last_candle['crsi_1h'] < 10.0)
-                    )
-            ):
-                return None
-        elif (3 <= count_of_entries <= self.max_rebuy_orders):
-            if (
-                    (current_profit > self.rebuy_pcts[count_of_entries - 1])
-                    or (
-                        (last_candle['crsi'] < 12.0)
-                        or (last_candle['crsi_1h'] < 10.0)
-                        or (last_candle['btc_not_downtrend_1h'] == False)
-                    )
-            ):
-                return None
+        # if to use alternate rebuy scheme
+        use_alt = False
+        if ((filled_entries[0].cost * (0.15 + (count_of_entries * 0.005))) < min_stake):
+            use_alt = True
+
+        if ('use_alt_rebuys' in self.config and self.config['use_alt_rebuys']):
+            use_alt = True
+
+        if not use_alt:
+            if (1 <= count_of_entries <= 2):
+                if (
+                        (current_profit > self.rebuy_pcts[count_of_entries - 1])
+                        or (
+                            (last_candle['crsi'] < 12.0)
+                            or (last_candle['crsi_1h'] < 10.0)
+                        )
+                ):
+                    return None
+            elif (3 <= count_of_entries <= self.max_rebuy_orders):
+                if (
+                        (current_profit > self.rebuy_pcts[count_of_entries - 1])
+                        or (
+                            (last_candle['crsi'] < 12.0)
+                            or (last_candle['crsi_1h'] < 10.0)
+                            or (last_candle['btc_not_downtrend_1h'] == False)
+                        )
+                ):
+                    return None
+        else:
+            if (count_of_entries == 1):
+                if (
+                        (current_profit > self.rebuy_pcts_alt[0])
+                        or (
+                            (last_candle['crsi'] < 12.0)
+                        )
+                ):
+                    return None
+            elif (count_of_entries == 2):
+                if (
+                        (current_profit > self.rebuy_pcts_alt[1])
+                        or (
+                            (last_candle['crsi'] < 20.0)
+                            or (last_candle['crsi_1h'] < 11.0)
+                        )
+                ):
+                    return None
 
         # Log if the last candle triggered a buy signal, even if max rebuys reached
         if (('buy' in last_candle and last_candle['buy'] == 1) or ('enter_long' in last_candle and last_candle['enter_long'] == 1)) and self.dp.runmode.value in ('backtest','dry_run'):
             log.info(f"Rebuy: a buy tag found for pair {trade.pair}")
 
-        # Maximum 7 rebuys. Half the stake of the original.
-        if 0 < count_of_entries <= self.max_rebuy_orders:
+        # Maximum 7 or 2 rebuys.
+        if 0 < count_of_entries <= self.max_rebuy_orders if not use_alt else self.max_rebuy_orders_alt:
             try:
                 # This returns first order stake size
                 stake_amount = filled_entries[0].cost
                 # This then calculates current safety order size
-                stake_amount = stake_amount * (0.15 + (count_of_entries * 0.005))
+                if not use_alt:
+                    stake_amount = stake_amount * (0.15 + (count_of_entries * 0.005))
+                else:
+                    stake_amount = stake_amount * (0.35 + (count_of_entries * 0.005))
+                    if (stake_amount < min_stake):
+                        stake_amount = min_stake
                 return stake_amount
             except Exception as exception:
                 return None
@@ -2501,7 +2537,7 @@ class NostalgiaForInfinityX(IStrategy):
         is_leverage = bool(re.match(leverage_pattern,trade.pair)) or True
         stop_index = 0 if is_rebuy and not is_leverage else 1 if not is_rebuy and not is_leverage else 2
         if (
-                (current_profit < [-0.35, -0.35, -0.46][stop_index])
+                (current_profit < [-0.5, -0.5, -0.5][stop_index])
                 and (last_candle['close'] < last_candle['ema_200'])
                 and (last_candle['close'] < (last_candle['ema_200'] - last_candle['atr']))
                 and (last_candle['sma_200_dec_20'])
@@ -10228,7 +10264,7 @@ class NostalgiaForInfinityX(IStrategy):
                     item_buy_logic.append(dataframe['tail_15m'].lt(dataframe['bb40_2_delta_15m'] * 0.18))
                     item_buy_logic.append(dataframe['close_15m'].lt(dataframe['bb40_2_low_15m'].shift()))
                     item_buy_logic.append(dataframe['close_15m'].le(dataframe['close_15m'].shift()))
-                    item_buy_logic.append(dataframe['rsi_14_15m'] < 30.0)
+                    item_buy_logic.append(dataframe['rsi_14_15m'] < 31.0)
                     item_buy_logic.append(dataframe['cti_15m'] < -0.85)
                     item_buy_logic.append(dataframe['rsi_14'] < 44.0)
 
@@ -10267,7 +10303,7 @@ class NostalgiaForInfinityX(IStrategy):
 
                     # Logic
                     item_buy_logic.append(dataframe['ema_26_15m'] > dataframe['ema_12_15m'])
-                    item_buy_logic.append((dataframe['ema_26_15m'] - dataframe['ema_12_15m']) > (dataframe['open_15m'] * 0.023))
+                    item_buy_logic.append((dataframe['ema_26_15m'] - dataframe['ema_12_15m']) > (dataframe['open_15m'] * 0.02))
                     item_buy_logic.append((dataframe['ema_26_15m'].shift(3) - dataframe['ema_12_15m'].shift(3)) > (dataframe['open_15m'] / 100))
                     item_buy_logic.append(dataframe['close_15m'] < (dataframe['bb20_2_low_15m'] * 0.999))
                     item_buy_logic.append(dataframe['r_14'] < -72.0)
@@ -10298,11 +10334,12 @@ class NostalgiaForInfinityX(IStrategy):
                 # Condition #48 - 15m. Semi swing. Local deep. 15m uptrend.
                 elif index == 48:
                     # Non-Standard protections
+                    item_buy_logic.append(dataframe['close'] > (dataframe['sup_level_1h'] * 0.85))
 
                     # Logic
                     item_buy_logic.append(dataframe['close_15m'].shift(3) < (dataframe['sma_15_15m'].shift(3) * 0.95))
                     item_buy_logic.append(dataframe['close_15m'] > (dataframe['open_15m'].shift(3)))
-                    item_buy_logic.append(dataframe['ewo_15m'] > 5.0)
+                    item_buy_logic.append(dataframe['ewo_15m'] > 2.8)
                     item_buy_logic.append(dataframe['cti_15m'] < -0.75)
                     item_buy_logic.append(dataframe['r_14_15m'].shift(3) < -94.0)
                     item_buy_logic.append(dataframe['cti'] < -0.5)
