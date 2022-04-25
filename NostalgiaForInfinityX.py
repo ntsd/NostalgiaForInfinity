@@ -116,7 +116,7 @@ class NostalgiaForInfinityX(IStrategy):
     INTERFACE_VERSION = 3
 
     def version(self) -> str:
-        return "v11.0.586"
+        return "v11.0.591"
 
     # ROI table:
     minimal_roi = {
@@ -6069,40 +6069,40 @@ class NostalgiaForInfinityX(IStrategy):
 
     def sell_trail(self, current_profit: float, max_profit: float, max_loss: float, last_candle, previous_candle_1, trade: 'Trade', current_time: 'datetime') -> tuple:
         if 0.02 > current_profit >= 0.01:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_1_x'
         elif 0.03 > current_profit >= 0.02:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_2_x'
         elif 0.04 > current_profit >= 0.03:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_3_x'
         elif 0.05 > current_profit >= 0.04:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_4_x'
         elif 0.06 > current_profit >= 0.05:
-            if (max_profit > (current_profit + 0.02)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_5_x'
         elif 0.07 > current_profit >= 0.06:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_6_x'
         elif 0.08 > current_profit >= 0.07:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_7_x'
         elif 0.09 > current_profit >= 0.08:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_8_x'
         elif 0.1 > current_profit >= 0.09:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_9_x'
         elif 0.12 > current_profit >= 0.1:
-            if (max_profit > (current_profit + 0.07)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_10_x'
         elif 0.2 > current_profit >= 0.12:
-            if (max_profit > (current_profit + 0.08)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_11_x'
         elif current_profit >= 0.2:
-            if (max_profit > (current_profit + 0.09)):
+            if (max_profit > (current_profit + 0.03)) and (last_candle['rsi_14'] < 50.0) and (last_candle['rsi_14'] < previous_candle_1['rsi_14']) and (last_candle['rsi_14_1h'] < 50.0):
                 return True, 'sell_profit_t_12_x'
 
         return False, None
@@ -9758,7 +9758,7 @@ class NostalgiaForInfinityX(IStrategy):
 
                     # Logic
                     item_buy_logic.append(((dataframe['close'] - dataframe['open'].rolling(12).min()) / dataframe['open'].rolling(12).min()) > 0.027)
-                    item_buy_logic.append(dataframe['rsi_14'] < 35.0)
+                    item_buy_logic.append(dataframe['rsi_14'] < 33.5)
                     item_buy_logic.append(dataframe['r_32'] < -80.0)
                     item_buy_logic.append(dataframe['mfi'] < 31.0)
                     item_buy_logic.append(dataframe['rsi_14_1h'] > 30.0)
